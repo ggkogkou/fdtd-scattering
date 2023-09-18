@@ -3,6 +3,9 @@ clear; close; clc;
 % Maximum Iterations Number
 max_steps = 300;
 
+% Time subdivision to periods
+T0 = max_steps / 12; 
+
 % Speed of light
 c = 3e8;
 
@@ -12,26 +15,34 @@ e0 = 8.854 * 1e-12; % farads / meter
 sigma_e = 0;
 sigma_m = 0;
 
+% Scaling parameter
+scale = 10;
+
 % Grid parameters
-cells_x = 100;
-cells_y = 100;
+cells_x = 10*scale;
+cells_y = 10*scale;
+
+% Wave excitation
+freq = 10e9; % Hertz
+amplitude = 4; % 
+source = zeros(1, max_steps); % keep the values of source
+
+% Wavelength
+wavelength = c / freq;
 
 % Space and time lattice increment steps
-dx = 3e-3;
+dx = wavelength/10;
 dt = dx / (2*c);
 
 % Hard source location
-hard_source_x = ceil(cells_x/10);
-hard_source_y = ceil(cells_y/2);
+source_x = ceil(0.5*cells_x);
+source_y = ceil(0.5*cells_y);
 
-% Wave excitation
-freq = 5e9; % Hertz
-amplitude = 2; % 
-hard_source = zeros(1, max_steps); % keep the values of source
-
-for t=1 : max_steps
-    time_t = (t-1) * dt;
-    hard_source(t) = amplitude * sin(2 * pi * freq * time_t);
+% Simulate source
+% Source active time T=10*To, zeros afterwards
+for n=1 : 10*T0
+    time_n = (n-1) * dt;
+    source(n) = amplitude * sin(2 * pi * freq * time_n);
 end
 
 % Field arrays
@@ -40,13 +51,13 @@ Hx = zeros(cells_x, cells_y+1);
 Hy = zeros(cells_x+1, cells_y);
 
 % Add metal cylinder
-cylinder_diameter = 20;
+cylinder_diameter = 2*scale;
 cylinder_radius = cylinder_diameter / 2;
 cylinder_radius_squared = cylinder_radius^2;
-cylinder_x = ceil(0.8 * cells_x);
-cylinder_y = ceil(0.5 * cells_y);
+cylinder_x = ceil(0.5*cells_x + 3*scale);
+cylinder_y = ceil(0.5*cells_y);
 
-cylinder_properties = [1, 1, 1e7, 0]; % [er, mr, σe, σm]
+cylinder_properties = [3.4, 1, 1.2, 0]; % [er, mr, σe, σm]
 
 % Updating coefficients
 Ca = zeros(cells_x+1, cells_y+1);
@@ -84,7 +95,7 @@ for i=x1 : x2
             % Assign values for electric field
             tmp = cylinder_properties(3)*dt/(2*cylinder_properties(1)*e0);
             Ca(i, j) = (1-tmp)/(1+tmp);
-            Cb(i, j) = dt/cylinder_properties(1)/dx/(1+tmp);
+            Cb(i, j) = dt/(cylinder_properties(1) * e0 * dx * (1 + tmp));
         end
     end
 end
@@ -155,7 +166,7 @@ for t=1 : max_steps
     end
 
     % Source excitation
-    Ez(hard_source_x, hard_source_y) = hard_source(t);
+    Ez(source_x, source_y) = source(t);
 
     % Update Ezx, Ezy (PML)
     for x=2 : pml_cells
@@ -209,14 +220,26 @@ for t=1 : max_steps
     axis off;
     title(['Ez at time step = ',timestep]);
 
+    % Draw circle around cylinder
+    hold on;
+    viscircles([cylinder_x, cylinder_y], cylinder_radius, 'EdgeColor', 'm', 'LineWidth', 1);
+    hold off;
+
+    Ez_tot(:,:) = Ezx_PML(:,:) + Ezy_PML(:,:);    
+
     subplot(1,2,2),imagesc(Ezx_PML');
     shading flat;
-    clim([-1 1]);
+    clim([-2 2]);
     axis([1 cells_x 1 cells_y]);
     colorbar;
     axis image; axis xy
     axis off;
-    title(['Ez at time step = ',timestep]);
+    title(['Ez total inside PML at time step = ',timestep]);
+
+    % Save Ez at specific time steps
+    %if t == 3*T0 || t == 10*T0 || t == 12*T0
+    %    pause;
+    %end
 
     pause(0.01)
 
