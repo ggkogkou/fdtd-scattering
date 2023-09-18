@@ -96,6 +96,10 @@ for i=x1 : x2
     end
 end
 
+% Define arrays to observe field's variation of two points of the grid
+Ez_p1 = zeros(1, max_steps); % p1
+Ez_p2 = zeros(1, max_steps); % p2
+
 % Before proceeding to the main loop, declare arrays to keep the past
 % electric field values that are required by the Mur's 2nd order ABC
 % equations
@@ -148,6 +152,10 @@ for t=1 : max_steps
         end
     end
 
+    % Update the values od the two test points p1, p2
+    Ez_p1(t) = Ez(scale, scale);
+    Ez_p2(t) = Ez(scale, ceil(cells_y/2));
+
     % Plot
     timestep=int2str(t);
     
@@ -173,4 +181,14 @@ for t=1 : max_steps
     pause(0.01)
 
 end
+
+% Plot the evolution of the field at p1 and p2
+figure;
+plot(1:max_steps, Ez_p1, 'b-', 1:max_steps, Ez_p2, 'r', 'LineWidth', 2);
+
+title('Plot of Ez_p_1 and Ez_p_2');
+xlabel('Steps');
+ylabel('Ez values');
+legend('Ez_p_1', 'Ez_p_2');
+grid on;
 

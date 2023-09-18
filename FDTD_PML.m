@@ -150,6 +150,10 @@ sigma_x_m = sigma_x_e * m0 / e0;
 Da_Hy_PML(1, 2:cells_y) = exp(-sigma_x_m*dt/m0);
 Db_Hy_PML(1, 2:cells_y) = (1-Da_Hy_PML(1, 2:cells_y))/(sigma_x_m*dx);
 
+% Define arrays to observe field's variation of two points of the grid
+Ez_p1 = zeros(1, max_steps); % p1
+Ez_p2 = zeros(1, max_steps); % p2
+
 % Main FDTD Loop
 for t=1 : max_steps
 
@@ -208,10 +212,14 @@ for t=1 : max_steps
         Hy_PML(pml_cells, y) = Da_Hy_PML(pml_cells, y)*Hy_PML(pml_cells, y) + Db_Hy_PML(pml_cells, y)*(Ez(1, y)-Ezx_PML(pml_cells, y)-Ezy_PML(pml_cells, y));
     end
 
+    % Update the values od the two test points p1, p2
+    Ez_p1(t) = Ez(scale, scale);
+    Ez_p2(t) = Ez(scale, ceil(cells_y/2));
+
     % Plot
     timestep=int2str(t);
     
-    subplot(1,2,1),imagesc(Ez');
+    subplot(2,2,1),imagesc(Ez');
     shading flat;
     clim([-1 1]);
     axis([1 cells_x 1 cells_y]);
@@ -227,7 +235,7 @@ for t=1 : max_steps
 
     Ez_tot(:,:) = Ezx_PML(:,:) + Ezy_PML(:,:);    
 
-    subplot(1,2,2),imagesc(Ezx_PML');
+    subplot(2,2,2),imagesc(Ez_tot');
     shading flat;
     clim([-2 2]);
     axis([1 cells_x 1 cells_y]);
@@ -235,6 +243,34 @@ for t=1 : max_steps
     axis image; axis xy
     axis off;
     title(['Ez total inside PML at time step = ',timestep]);
+
+    subplot(2,2,3),imagesc(Hx');
+    shading flat;
+    clim([-2/377 2/377]);
+    axis([1 cells_x+1 1 cells_y]);
+    colorbar;
+    axis image; axis xy
+    axis off;
+    title(['Magnetic Field Hx at time step = ',timestep]);
+
+    % Draw circle around cylinder
+    hold on;
+    viscircles([cylinder_x, cylinder_y], cylinder_radius, 'EdgeColor', 'm', 'LineWidth', 1);
+    hold off;
+    
+    subplot(2,2,4),imagesc(Hy');
+    shading flat;
+    clim([-2/377 2/377]);
+    axis([1 cells_x 1 cells_y+1]);
+    colorbar;
+    axis image; axis xy
+    axis off;
+    title(['Magnetic Field Hy at time step = ',timestep]);
+
+    % Draw circle around cylinder
+    hold on;
+    viscircles([cylinder_x, cylinder_y], cylinder_radius, 'EdgeColor', 'm', 'LineWidth', 1);
+    hold off;
 
     % Save Ez at specific time steps
     %if t == 3*T0 || t == 10*T0 || t == 12*T0
@@ -244,4 +280,15 @@ for t=1 : max_steps
     pause(0.01)
 
 end
+
+% Plot the evolution of the field at p1 and p2
+figure;
+plot(1:max_steps, Ez_p1, 'b-', 1:max_steps, Ez_p2, 'r', 'LineWidth', 2);
+
+title('Plot of Ez_p_1 and Ez_p_2');
+xlabel('Steps');
+ylabel('Ez values');
+legend('Ez_p_1', 'Ez_p_2');
+grid on;
+
 
