@@ -1,10 +1,10 @@
 clear; close; clc;
 
-% Maximum Iterations Number
-max_steps = 300;
-
 % Time subdivision to periods
-T0 = max_steps / 12; 
+T0 = 25; 
+
+% Maximum Iterations Number
+max_steps = 12*T0;
 
 % Speed of light
 c = 3e8;
