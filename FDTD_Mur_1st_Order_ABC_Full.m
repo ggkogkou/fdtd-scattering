@@ -47,8 +47,8 @@ end
 
 % Field arrays
 Ez = zeros(cells_x+1, cells_y+1);
-Hx = zeros(cells_x, cells_y+1);
-Hy = zeros(cells_x+1, cells_y);
+Hx = zeros(cells_x+1, cells_y);
+Hy = zeros(cells_x, cells_y+1);
 
 % Add metal cylinder
 cylinder_diameter = 2*scale;

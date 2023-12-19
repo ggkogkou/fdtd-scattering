@@ -19,7 +19,7 @@ sigma_m = 0;
 scale = 10;
 
 % Grid parameters
-cells_x = 10*scale;
+cells_x = 5*scale;
 cells_y = 10*scale;
 
 % Wave excitation
@@ -47,8 +47,8 @@ end
 
 % Field arrays
 Ez = zeros(cells_x+1, cells_y+1);
-Hx = zeros(cells_x, cells_y+1);
-Hy = zeros(cells_x+1, cells_y);
+Hx = zeros(cells_x+1, cells_y);
+Hy = zeros(cells_x, cells_y+1);
 
 % Add metal cylinder
 cylinder_diameter = 2*scale;
@@ -62,10 +62,10 @@ cylinder_properties = [3.4, 1, 1.2, 0]; % [er, mr, σe, σm]
 % Updating coefficients
 Ca = zeros(cells_x+1, cells_y+1);
 Cb = zeros(cells_x+1, cells_y+1);
-Da_Hx = zeros(cells_x, cells_y+1);
-Db_Hx = zeros(cells_x, cells_y+1);
-Da_Hy = zeros(cells_x+1, cells_y);
-Db_Hy = zeros(cells_x+1, cells_y);
+Da_Hx = zeros(cells_x+1, cells_y);
+Db_Hx = zeros(cells_x+1, cells_y);
+Da_Hy = zeros(cells_x, cells_y+1);
+Db_Hy = zeros(cells_x, cells_y+1);
 
 tmp = sigma_e*dt/(2*e0);
 Ca(:, :) = (1-tmp)/(1+tmp);
